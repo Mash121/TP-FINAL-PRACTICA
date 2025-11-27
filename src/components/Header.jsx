@@ -1,4 +1,4 @@
-import Navbar from './Navbar';
+import NavBar from './NavBar';
 import styles from './Header.module.css';
 import { Link } from 'react-router-dom';
 import { useContext } from 'react';
@@ -21,7 +21,7 @@ const Header = () => {
       </div>
 
       <div className={styles.navbarContainer}>
-        <Navbar />
+        <NavBar />
       </div>
 
       <div className={styles.iconsContainer}>
