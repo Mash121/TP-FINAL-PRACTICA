@@ -5,29 +5,29 @@ import { useAuthContext } from '../context/AuthContext';
 const Login = () => {
   const [usuario, setUsuario] = useState('');
   const [contrasenia, setContrasenia] = useState('');
-  
   const { login } = useAuthContext();
   const navigate = useNavigate();
-  
+
   const manejarSubmit = (evento) => {
     evento.preventDefault();
 
-    // Validación simple
-    if (usuario === 'martin' && contrasenia === '4268') {
+    const user = usuario.toLowerCase().trim();
+    const pass = contrasenia.trim();
 
-      // Guarda usuario + rol en el AuthContext
-      login(usuario);
+    const result = login(user, pass);
 
-      // Redirige al panel admin
-      navigate('/admin');
-
-      // Limpia los campos
-      setUsuario('');
-      setContrasenia('');
-
-    } else {
-      alert('Usuario o contraseña inválidos');
+    if (!result) {
+      alert("Usuario o contraseña incorrectos");
+      return;
     }
+
+    // 🔥 REDIRECCIONES
+    if (user === "martin") navigate('/admin');
+    else if (user === "james") navigate('/carrito');
+    else navigate('/');
+
+    setUsuario('');
+    setContrasenia('');
   };
 
   return (
@@ -39,6 +39,7 @@ const Login = () => {
         type="text"
         value={usuario}
         onChange={(e) => setUsuario(e.target.value)}
+        required
       />
 
       <label>Contraseña</label>
@@ -46,6 +47,7 @@ const Login = () => {
         type="password"
         value={contrasenia}
         onChange={(e) => setContrasenia(e.target.value)}
+        required
       />
 
       <button type="submit">Iniciar Sesión</button>

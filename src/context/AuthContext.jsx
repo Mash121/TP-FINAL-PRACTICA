@@ -1,68 +1,50 @@
 import { useContext, useState, createContext, useEffect } from "react";
 
 export const AuthContext = createContext();
+export const useAuthContext = () => useContext(AuthContext);
+
+// Usuarios válidos
+const usuariosValidos = [
+  { nombre: "martin", password: "4268", rol: "admin" },
+  { nombre: "james", password: "4268", rol: "cliente" },
+];
 
 export const AuthProvider = ({ children }) => {
   const [usuario, setUsuario] = useState(null);
-  const [carrito, setCarrito] = useState([]);
 
-  // --- REVISAR SESIÓN GUARDADA ---
+  // Cargar sesión persistida
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      const nombreUsuario = token.replace("fake-token-", "");
-
-      const rol = nombreUsuario === "martin" ? "admin" : "user";
-
-      setUsuario({
-        nombre: nombreUsuario,
-        rol: rol,
-      });
+    const guardado = localStorage.getItem("usuarioLogeado");
+    if (guardado) {
+      setUsuario(JSON.parse(guardado));
     }
   }, []);
 
-  // --- LOGIN ---
-  const login = (nombreUsuario) => {
-    const token = `fake-token-${nombreUsuario}`;
-    localStorage.setItem("authToken", token);
+  // LOGIN
+  const login = (nombreUsuario, password) => {
+    const nombreFinal = nombreUsuario.toLowerCase().trim();
+    const passFinal = password.trim();
 
-    const rol = nombreUsuario === "martin" ? "admin" : "user";
+    const user = usuariosValidos.find(
+      (u) => u.nombre === nombreFinal && u.password === passFinal
+    );
 
-    setUsuario({
-      nombre: nombreUsuario,
-      rol: rol,
-    });
+    if (!user) return false;
+
+    setUsuario(user);
+    localStorage.setItem("usuarioLogeado", JSON.stringify(user));
+    return true;
   };
 
-  // --- LOGOUT ---
+  // LOGOUT — ❗ YA NO BORRA EL CARRITO
   const logout = () => {
-    localStorage.removeItem("authToken");
+    localStorage.removeItem("usuarioLogeado");
     setUsuario(null);
-    setCarrito([]);
   };
-
-  // --- CARRITO ---
-  const agregarAlCarrito = (producto) => {
-    setCarrito((prev) => [...prev, producto]);
-  };
-
-  const eliminarDelCarrito = (idProducto) =>
-    setCarrito((prev) => prev.filter((p) => p.id !== idProducto));
 
   return (
-    <AuthContext.Provider
-      value={{
-        usuario,
-        login,
-        logout,
-        carrito,
-        agregarAlCarrito,
-        eliminarDelCarrito,
-      }}
-    >
+    <AuthContext.Provider value={{ usuario, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuthContext = () => useContext(AuthContext);

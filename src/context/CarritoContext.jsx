@@ -1,29 +1,36 @@
 import { createContext, useState, useEffect } from "react";
+import { useAuthContext } from "./AuthContext";
 
 export const CarritoContext = createContext();
 
 export function CarritoProvider({ children }) {
+  const { usuario } = useAuthContext();
+  const [carrito, setCarrito] = useState([]);
 
-  const [carrito, setCarrito] = useState(() => {
-    if (typeof window !== "undefined") {
-      const guardado = localStorage.getItem("carrito");
-      return guardado ? JSON.parse(guardado) : [];
-    }
-    return [];
-  });
-
+  // Cargar carrito del usuario
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("carrito", JSON.stringify(carrito));
-    }
-  }, [carrito]);
+    if (!usuario) return;
+
+    const key = `carrito_${usuario.nombre}`;
+    const guardado = localStorage.getItem(key);
+
+    setCarrito(guardado ? JSON.parse(guardado) : []);
+  }, [usuario]);
+
+  // Guardar carrito del usuario cuando cambia
+  useEffect(() => {
+    if (!usuario) return;
+
+    const key = `carrito_${usuario.nombre}`;
+    localStorage.setItem(key, JSON.stringify(carrito));
+  }, [carrito, usuario]);
 
   const agregarAlCarrito = (producto) => {
-    setCarrito([...carrito, producto]);
+    setCarrito((prev) => [...prev, producto]);
   };
 
-  const eliminarDelCarrito = (indiceAEliminar) => {
-    setCarrito(carrito.filter((_, indice) => indice !== indiceAEliminar));
+  const eliminarDelCarrito = (indice) => {
+    setCarrito((prev) => prev.filter((_, i) => i !== indice));
   };
 
   const vaciarCarrito = () => {
